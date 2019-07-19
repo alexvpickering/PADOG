@@ -6,6 +6,8 @@
 #' The original implementation of \code{\link[PADOG]{padog}} was modified to allow two-sample
 #' groups and eliminate defunct KEGG.db warning.
 #'
+#' @param rna_seq is the analysis on RNA seq data? Default is \code{FALSE}. If \code{TRUE} must supply \code{pdata}.
+#' @param pdata data.frame with columns \code{lib.size} and \code{norm.factors} needed if \code{rna_seq} is \code{TRUE}.
 #' @export
 #'
 #' @importFrom foreach foreach
@@ -13,8 +15,9 @@
 #'
 padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
                    gslist = NULL, gs.names = NULL, NI = 1000, Nmin = 3, verbose = TRUE, 
-                   parallel = FALSE, dseed = NULL, ncr = NULL) {
-
+                   parallel = FALSE, dseed = NULL, ncr = NULL, rna_seq = FALSE, pdata = NULL) {
+    
+    stopifnot(rna_seq & !is.null(pdata))
     stopifnot(is(esetm, "matrix"))
     # stopifnot(all(dim(esetm) > 4))
     stopifnot(is(group, "factor") | is(group, "character"))
@@ -161,10 +164,9 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
             design <- stats::model.matrix(~0 + G)
             colnames(design) <- levels(G)
         }
-        fit <- limma::lmFit(esetm, design)
-        cont.matrix <- limma::makeContrasts(contrasts = "d-c", levels = design)
-        fit2 <- limma::contrasts.fit(fit, cont.matrix)
-        fit2 <- limma::eBayes(fit2)
+        
+        fit2 <- fit_ebayes(esetm, contrasts = 'd-c', mod = design, pdata = pdata, rna_seq = rna_seq)
+        
         aT1 <- limma::topTable(fit2, coef = 1, number = topSigNum)
         aT1$ID = rownames(aT1)
         de = abs(aT1$t)
@@ -263,4 +265,32 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
     res = res[ord, ]
     pval = lapply(pval, function(x) {x = x[ord,,drop=FALSE]; rownames(x) = res$ID; x})
     list(res=res, pval=pval)
+}
+
+
+#' Perform eBayes analysis from limma.
+#'
+#' Generates contrast matrix then runs eBayes analysis from limma.
+#' 
+#' @inheritParams padog 
+#' @param contrasts comparison to make. For \code{\link{padog}} is \code{'d-c'}.
+#' @param mod design matrix
+#'
+#' @return result from call to limma \code{eBayes}.
+#' @export
+#' @keywords internal
+fit_ebayes <- function(esetm, contrasts, mod, pdata, rna_seq = FALSE) {
+    
+    if (rna_seq) {
+        lib.size <- pdata$lib.size * pdata$norm.factors
+        v <- limma::voom(esetm, mod, lib.size)
+        fit  <- limma::lmFit(v)
+        
+    } else {
+        fit <- limma::lmFit(esetm, mod)
+    }
+    
+    cont.matrix <- limma::makeContrasts(contrasts = contrasts, levels = mod)
+    fit2 <- limma::contrasts.fit(fit, cont.matrix)
+    return(limma::eBayes(fit2))
 }
