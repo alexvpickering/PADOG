@@ -6,3 +6,4 @@ vignettes/*
 !vignettes/*.db
 
 
+.Rproj.user

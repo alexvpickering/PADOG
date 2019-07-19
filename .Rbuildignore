@@ -7,3 +7,5 @@ vignettes/.*\.out$
 vignettes/.*\.log$
 vignettes/.*\.blg$
 
+^.*\.Rproj$
+^\.Rproj\.user$
