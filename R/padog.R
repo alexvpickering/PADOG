@@ -221,8 +221,12 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
     plotIte = min(NI, 21)
     MSabsT_raw = MSabsT
     MSTop_raw = MSTop
+    
+    # standardize scores
     MSabsT = scale(MSabsT)
     MSTop = scale(MSTop)
+    
+    # compute p-values
     mff = function(x) {
         mean(x[-1] > x[1], na.rm = TRUE)
     }
@@ -230,6 +234,18 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
     PSTop = apply(MSTop, 1, mff)
     PSabsT[PSabsT == 0] <- 1/NI/100
     PSTop[PSTop == 0] <- 1/NI/100
+    
+    # estimate FDR
+    pval = list()
+    fdrs = lapply(list(MSabsT, MSTop), function(x) {
+        p1 = rowMeans(x[,-1,drop=FALSE] > x[,1], na.rm=TRUE)
+        x = x[,-1,drop=FALSE]
+        p0 = sapply(1:ncol(x), function(z) rowMeans(x[,-z,drop=FALSE] > x[,z], na.rm=TRUE))
+        pval <<- c(pval, list(p0))
+        getFDR(p0, p1)
+    })
+    names(fdrs) = c("FDRmeanAbsT", "FDRpadog")
+    names(pval) = c("AbsmT", "PADOG") #use method names
     
     if (!is.null(gs.names)) {
         myn = gs.names
@@ -241,9 +257,10 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
         length(intersect(rownames(esetm), x))
     }))
     res = data.frame(Name = myn, ID = names(gslist), Size = SIZE,
-                     meanAbsT0, padog0, PmeanAbsT = PSabsT, Ppadog = PSTop,
+                     meanAbsT0, padog0, PmeanAbsT = PSabsT, fdrs, Ppadog = PSTop,
                      stringsAsFactors = FALSE)
     ord = order(res$Ppadog, -res$padog0)
     res = res[ord, ]
-    res
+    pval = lapply(pval, function(x) {x = x[ord,,drop=FALSE]; rownames(x) = res$ID; x})
+    list(res=res, pval=pval)
 }
