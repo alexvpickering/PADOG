@@ -5,11 +5,16 @@
 \title{Pathway Analysis with Down-weighting of Overlapping Genes (PADOG)}
 \usage{
 padog(esetm = NULL, group = NULL, paired = FALSE, block = NULL,
-  gslist = NULL, gs.names = NULL, NI = 1000, Nmin = 3,
-  verbose = TRUE, parallel = FALSE, dseed = NULL, ncr = NULL,
-  rna_seq = FALSE, pdata = NULL)
+  gs = NULL, NI = 1000, Nmin = 3, verbose = TRUE,
+  parallel = FALSE, dseed = NULL, ncr = NULL, rna_seq = FALSE,
+  pdata = NULL)
 }
 \arguments{
+\item{gs}{Named list with: \itemize{
+  \item \code{gs$list}  named lists (KEGG pathway number) for each pathway, each with a character vectors of entrez ids with \code{names} attribute equal to HGNC symbols.
+  \item \code{gs$names}  named character vector of KEGG pathway names with \code{names} attribute equal to KEGG pathway numbers.
+}}
+
 \item{rna_seq}{is the analysis on RNA seq data? Default is \code{FALSE}. If \code{TRUE} must supply \code{pdata}.}
 
 \item{pdata}{data.frame with columns \code{lib.size} and \code{norm.factors} needed if \code{rna_seq} is \code{TRUE}.}

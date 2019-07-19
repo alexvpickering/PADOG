@@ -6,16 +6,26 @@
 #' The original implementation of \code{\link[PADOG]{padog}} was modified to allow two-sample
 #' groups and eliminate defunct KEGG.db warning.
 #'
+#' @param gs Named list with: \itemize{
+#'   \item \code{gs$list}  named lists (KEGG pathway number) for each pathway, each with a character vectors of entrez ids with \code{names} attribute equal to HGNC symbols.
+#'   \item \code{gs$names}  named character vector of KEGG pathway names with \code{names} attribute equal to KEGG pathway numbers.
+#' } 
 #' @param rna_seq is the analysis on RNA seq data? Default is \code{FALSE}. If \code{TRUE} must supply \code{pdata}.
 #' @param pdata data.frame with columns \code{lib.size} and \code{norm.factors} needed if \code{rna_seq} is \code{TRUE}.
 #' @export
 #'
 #' @importFrom foreach foreach
+#' @importFrom foreach %dopar%
 #' @importFrom doRNG %dorng%
 #'
-padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL,
-                   gslist = NULL, gs.names = NULL, NI = 1000, Nmin = 3, verbose = TRUE, 
+padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL, gs = NULL, NI = 1000, Nmin = 3, verbose = TRUE, 
                    parallel = FALSE, dseed = NULL, ncr = NULL, rna_seq = FALSE, pdata = NULL) {
+    
+    # if not provided, will use from sysdata
+    if (!is.null(gs)) {
+        gslist <- gs$list
+        gs.names <- gs$names
+    }
     
     stopifnot(rna_seq & !is.null(pdata))
     stopifnot(is(esetm, "matrix"))

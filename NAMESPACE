@@ -3,4 +3,5 @@
 export(fit_ebayes)
 export(padog)
 importFrom(doRNG,"%dorng%")
+importFrom(foreach,"%dopar%")
 importFrom(foreach,foreach)
