@@ -20,8 +20,8 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL, gsl
                    parallel = FALSE, dseed = NULL, ncr = NULL, rna_seq = FALSE, pdata = NULL) {
     
     
-    stopifnot(rna_seq & !is.null(pdata))
-    stopifnot(is(esetm, "matrix"))
+    if (rna_seq) stopifnot(!is.null(pdata))
+    stopifnot(is(esetm, "matrix") | is(esetm, 'Matrix'))
     # stopifnot(all(dim(esetm) > 4))
     stopifnot(is(group, "factor") | is(group, "character"))
     stopifnot(length(group) == dim(esetm)[2])
