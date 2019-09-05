@@ -11,7 +11,6 @@
 #' @param rna_seq is the analysis on RNA seq data? Default is \code{FALSE}. If \code{TRUE} must supply \code{pdata}.
 #' @param pdata data.frame with columns \code{lib.size} and \code{norm.factors} needed if \code{rna_seq} is \code{TRUE}.
 #' @param browse Boolean set to TRUE if you want to \code{browser} through the code. For development/debugging.
-#' @param skip_stats Boolean set to \code{TRUE} if you want to skip computation of pval/fdrs (slow) and just get the ranked pathways (fast).
 #' @export
 #'
 #' @importFrom foreach foreach
@@ -21,14 +20,10 @@
 #' 
 #'
 padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL, gslist = NULL, gs.names = NULL, NI = 1000, Nmin = 3, verbose = TRUE, 
-                   parallel = FALSE, dseed = NULL, ncr = NULL, rna_seq = FALSE, pdata = NULL, browse = FALSE, skip_stats = FALSE) {
+                   parallel = FALSE, dseed = NULL, ncr = NULL, rna_seq = FALSE, pdata = NULL, browse = FALSE) {
   
   
   if (browse) browser()
-  
-  # don't run parallel if not computing statistics
-  parallel <- parallel & !skip_stats
-  
   
   if (rna_seq) stopifnot(!is.null(pdata))
   stopifnot(is(esetm, "matrix") | is(esetm, 'Matrix'))
@@ -154,8 +149,7 @@ padog <- function (esetm = NULL, group = NULL, paired = FALSE, block = NULL, gsl
       combidx = combFun(seq_along(G), countn = FALSE)
     }
   }
-  # if skipping stats, only first, non-permuted iteration is needed
-  NI = ifelse(skip_stats, 0, ncol(combidx))
+  NI = ncol(combidx)
   
   deINgs = intersect(rownames(esetm), unlist(gslist))
   gslistINesetm = lapply(gslist, match, table = deINgs, nomatch = 0)
