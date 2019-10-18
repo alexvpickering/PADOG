@@ -7,8 +7,7 @@
 padog(esetm = NULL, group = NULL, paired = FALSE, block = NULL,
   gslist = NULL, gs.names = NULL, NI = 1000, Nmin = 3,
   verbose = TRUE, parallel = FALSE, dseed = NULL, ncr = NULL,
-  rna_seq = FALSE, pdata = NULL, browse = FALSE,
-  skip_stats = FALSE)
+  rna_seq = FALSE, pdata = NULL, browse = FALSE)
 }
 \arguments{
 \item{gslist}{Named lists (KEGG pathway number) for each pathway, each with a character vectors of entrez ids with \code{names} attribute equal to HGNC symbols.}
@@ -20,8 +19,6 @@ padog(esetm = NULL, group = NULL, paired = FALSE, block = NULL,
 \item{pdata}{data.frame with columns \code{lib.size} and \code{norm.factors} needed if \code{rna_seq} is \code{TRUE}.}
 
 \item{browse}{Boolean set to TRUE if you want to \code{browser} through the code. For development/debugging.}
-
-\item{skip_stats}{Boolean set to \code{TRUE} if you want to skip computation of pval/fdrs (slow) and just get the ranked pathways (fast).}
 }
 \description{
 This is a general purpose gene set analysis method that downplays the
